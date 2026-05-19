@@ -29,4 +29,5 @@ LEFT JOIN altos_attempts aa ON a.altos_interview_id = aa.turing_interview_id
 LEFT JOIN meeting        m  ON m.channel_id          = aa.room_id
 WHERE a.created_at >= COALESCE(%(since)s::timestamptz, NOW() - INTERVAL '30 days')
   AND m.is_completed IN ('COMPLETED', 'PARTIALLY_COMPLETE')
+  AND (a.founder_email IS NULL OR a.founder_email NOT ILIKE '%%@qode.world')
 ORDER BY a.created_at DESC;

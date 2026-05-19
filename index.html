@@ -165,20 +165,12 @@
       q: "", stage: "", loc: "", status: "", sort: "-applied_at",
     };
 
-    // Prefer the serverless endpoint (production); fall back to data.json (local dev).
-    (async function load() {
-      const sources = ["/api/data", "data.json"];
-      for (const src of sources) {
-        try {
-          const r = await fetch(src, { cache: "no-cache" });
-          if (!r.ok) continue;
-          const payload = await r.json();
-          boot(payload);
-          return;
-        } catch (_) { /* try next */ }
-      }
-      $("#meta").textContent = "Failed to load data — tried /api/data and data.json";
-    })();
+    fetch("data.json", { cache: "no-cache" })
+      .then(r => { if (!r.ok) throw new Error("data.json " + r.status); return r.json(); })
+      .then(boot)
+      .catch(err => {
+        $("#meta").textContent = "Failed to load data.json — " + err.message;
+      });
 
     function boot(payload) {
       state.founders = payload.founders || [];

@@ -1,21 +1,16 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "functions": {
-    "api/data.py": {
-      "maxDuration": 30
-    }
-  },
-  "crons": [
-    {
-      "path": "/api/data",
-      "schedule": "0 9 * * *"
-    }
-  ],
   "headers": [
+    {
+      "source": "/data.json",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=60" }
+      ]
+    },
     {
       "source": "/index.html",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=300, s-maxage=3600" }
+        { "key": "Cache-Control", "value": "public, max-age=3600" }
       ]
     }
   ]

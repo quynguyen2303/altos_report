@@ -1,16 +1,18 @@
-# ─── Option A: classic crontab (simplest) ─────────────────────────────────────
-# Refresh hourly. Pipe stderr to a log so failures are visible.
-# Add to crontab with `crontab -e`.
+# ─── Local cron (the canonical setup) ─────────────────────────────────────────
+# Your machine (or any host) runs ./refresh-and-push.sh on a schedule. The
+# script pulls latest, regenerates data.json, commits + pushes if anything
+# changed. Vercel auto-redeploys from main and the report is live.
+#
+# Install with `crontab -e`:
 
-0 * * * * cd /opt/altos_report && \
-          DATABASE_URL="${DATABASE_URL}" \
-          /usr/local/bin/python3 refresh.py >> /var/log/altos_report.log 2>&1 && \
-          ./deploy/upload.sh s3 >> /var/log/altos_report.log 2>&1
+# Hourly during business hours, Mon–Fri (Saigon time, ICT = UTC+7).
+# Logs to /tmp/altos_refresh.log so you can `tail -f` it.
+0 1-12 * * 1-5 cd /Users/quy/claude/altos_report && ./refresh-and-push.sh >> /tmp/altos_refresh.log 2>&1
 
 
-# ─── Option B: launchd (macOS) ────────────────────────────────────────────────
+# ─── macOS launchd alternative ────────────────────────────────────────────────
 # Save as ~/Library/LaunchAgents/world.qode.altos-report.plist, then:
-#   launchctl load ~/Library/LaunchAgents/world.qode.altos-report.plist
+#   launchctl bootstrap gui/$UID ~/Library/LaunchAgents/world.qode.altos-report.plist
 #
 # <?xml version="1.0" encoding="UTF-8"?>
 # <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -19,39 +21,16 @@
 #   <key>ProgramArguments</key>
 #     <array>
 #       <string>/bin/bash</string><string>-lc</string>
-#       <string>cd /opt/altos_report && python3 refresh.py && ./deploy/upload.sh s3</string>
+#       <string>cd /Users/quy/claude/altos_report && ./refresh-and-push.sh</string>
 #     </array>
 #   <key>StartInterval</key><integer>3600</integer>
-#   <key>EnvironmentVariables</key>
-#     <dict><key>DATABASE_URL</key><string>postgres://...</string></dict>
+#   <key>StandardOutPath</key><string>/tmp/altos_refresh.log</string>
+#   <key>StandardErrorPath</key><string>/tmp/altos_refresh.log</string>
 # </dict></plist>
 
 
-# ─── Option C: Kubernetes CronJob (Qode infra) ────────────────────────────────
-# In qode-iac, create charts/altos-report/templates/cronjob.yaml:
-#
-# apiVersion: batch/v1
-# kind: CronJob
-# metadata:
-#   name: altos-report-refresh
-# spec:
-#   schedule: "0 * * * *"
-#   concurrencyPolicy: Forbid
-#   successfulJobsHistoryLimit: 1
-#   failedJobsHistoryLimit: 3
-#   jobTemplate:
-#     spec:
-#       template:
-#         spec:
-#           restartPolicy: OnFailure
-#           containers:
-#             - name: refresh
-#               image: gcr.io/qode/altos-report:latest
-#               envFrom:
-#                 - secretRef:
-#                     name: altos-report-db        # contains DATABASE_URL
-#                 - secretRef:
-#                     name: altos-report-uploader  # contains AWS_* or GOOGLE_*
-#               command: ["/bin/sh", "-c"]
-#               args:
-#                 - "python3 refresh.py && ./deploy/upload.sh s3"
+# ─── Legacy: S3 / GCS upload path (if you ever leave Vercel) ─────────────────
+# 0 * * * * cd /opt/altos_report && \
+#           DATABASE_URL="${DATABASE_URL}" \
+#           /usr/local/bin/python3 refresh.py && \
+#           ./deploy/upload.sh s3 >> /var/log/altos_report.log 2>&1

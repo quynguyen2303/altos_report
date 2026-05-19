@@ -4,7 +4,6 @@ __pycache__/
 .env
 .env.local
 .vercel
-data.json
 data.json.tmp
 /tmp/
 .DS_Store

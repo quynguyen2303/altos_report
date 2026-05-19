@@ -30,5 +30,4 @@ LEFT JOIN meeting        m  ON m.channel_id          = aa.room_id
 WHERE a.created_at >= COALESCE(%(since)s::timestamptz, NOW() - INTERVAL '30 days')
   AND m.is_completed IN ('COMPLETED', 'PARTIALLY_COMPLETE')
   AND (a.founder_email IS NULL OR a.founder_email NOT ILIKE '%%@qode.world')
-  AND (a.founder_name  IS NULL OR a.founder_name  NOT ILIKE 'seunghwan')
 ORDER BY a.created_at DESC;

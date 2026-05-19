@@ -35,9 +35,17 @@ git pull --rebase --autostash "$REMOTE" "$BRANCH" >/dev/null
 # 2. Regenerate data.json.
 "$PY" refresh.py
 
-# 3. Commit + push only if the snapshot changed.
-if git diff --quiet -- data.json; then
-  echo "$(date -u +%FT%TZ) no changes"
+# 3. Compare just the founders array (ignore generated_at timestamp churn).
+PREV_JSON=$(git show "${REMOTE}/${BRANCH}":data.json 2>/dev/null || echo '{"founders":[]}')
+CHANGED=$(PREV="$PREV_JSON" "$PY" - <<'PY'
+import json, os, sys
+prev = json.loads(os.environ.get("PREV", '{"founders":[]}'))
+new  = json.load(open("data.json"))
+print("yes" if prev.get("founders") != new.get("founders") else "no")
+PY
+)
+if [ "$CHANGED" = "no" ]; then
+  echo "$(date -u +%FT%TZ) no founder changes"
   exit 0
 fi
 

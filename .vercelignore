@@ -1,6 +1,5 @@
-refresh.py
+bin/
 refresh-and-push.sh
-requirements.txt
 query.sql
 .venv/
 deploy/

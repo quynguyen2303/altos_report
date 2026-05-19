@@ -33,7 +33,7 @@ BRANCH="${ALTOS_BRANCH:-main}"
 git pull --rebase --autostash "$REMOTE" "$BRANCH" >/dev/null
 
 # 2. Regenerate data.json.
-"$PY" refresh.py
+"$PY" bin/refresh.py
 
 # 3. Compare just the founders array (ignore generated_at timestamp churn).
 PREV_JSON=$(git show "${REMOTE}/${BRANCH}":data.json 2>/dev/null || echo '{"founders":[]}')

@@ -17,7 +17,7 @@ from pathlib import Path
 import psycopg
 from psycopg.rows import dict_row
 
-HERE = Path(__file__).parent
+HERE = Path(__file__).resolve().parent.parent
 SQL = (HERE / "query.sql").read_text()
 
 

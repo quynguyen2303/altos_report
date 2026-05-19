@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+.env.local
+.vercel
+data.json
+data.json.tmp
+/tmp/
+.DS_Store
+.gstack/

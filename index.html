@@ -301,7 +301,7 @@
       const sections = SECTIONS.map(([label, key]) => {
         const val = f[key];
         if (val === null || val === undefined || val === "") return "";
-        return `<details>
+        return `<details open>
           <summary>${esc(label)}</summary>
           <div class="body">${renderField(val)}</div>
         </details>`;

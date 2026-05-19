@@ -38,7 +38,7 @@ vercel env add DATABASE_URL preview
 vercel --prod
 ```
 
-Cron is declared in `vercel.json` (`crons: [{ path: "/api/data", schedule: "0 * * * *" }]`). The cron's job is to warm the edge cache — it hits the function once an hour so the next visitor gets a fresh response without paying for a cold DB query.
+Cron is declared in `vercel.json` (`crons: [{ path: "/api/data", schedule: "0 9 * * *" }]`). The cron's job is to warm the edge cache — it hits the function once a day so the morning's first visitor gets fresh data without paying for a cold DB query. Between cron runs, the `stale-while-revalidate=86400` header on the response lets the CDN serve cached data instantly while refreshing in the background, so the report is always fast and never more than ~1 day stale even between visits. (Hobby-plan limit is daily; upgrade to Pro for hourly or sub-hourly crons.)
 
 ### Local dev
 
